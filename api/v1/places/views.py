@@ -4,11 +4,22 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from api.v1.places.serializers import PlaceSerializer, PlaceDetailSerializer
 from places.models import Place
+from django.db.models import Q
 
 
 @api_view(["GET"])
+@permission_classes([AllowAny])
 def places(request):
     instances = Place.objects.filter(is_deleted=False)
+
+    q = request.GET.get("q")
+    if q:
+        ids = q.split(",")
+        instances = instances.filter(category__in=ids)
+
+        # instances = instances.filter(Q(name__icontains=q) | Q(place__icontains=q) , is_deleted=False)
+        # instances = instances.filter(category__name__icontains=q)
+
     context = {
         "request":request
     }
